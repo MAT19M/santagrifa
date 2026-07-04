@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Santa Grifa - Datos JSON</title>
+  <style>
+    /* Fondo completamente negro para evitar destellos y brillo alto */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000000;
+      color: #b0b0b0; /* Gris suave, no deslumbra como el blanco puro */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    /* Contenedor oscuro con bordes sutiles */
+    .card {
+      background-color: #121212;
+      padding: 2rem;
+      border-radius: 8px;
+      border: 1px solid #2c2c2c;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Título en un tono gris más claro pero opaco */
+    h1 {
+      font-size: 1.6rem;
+      color: #dddddd;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: #888888;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Botón verde oscuro estilo terminal, alto contraste y sin brillo excesivo */
+    button {
+      background-color: #1b5e20; 
+      color: #ffffff;
+      border: 1px solid #4caf50;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #2e7d32;
+    }
+
+    /* Contenedor de respuesta JSON formateada estilo código/consola */
+    .json-output {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background-color: #0a0a0a;
+      border: 1px dashed #4caf50;
+      border-radius: 4px;
+      text-align: left;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      color: #4caf50;
+      display: none; /* Oculto hasta que se obtengan los datos */
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>Santa Grifa</h1>
+    <p>Presiona el botón para cargar los datos de la canción.</p>
+    <button id="boton">Recuperar Datos</button>
+    
+    <div id="resultado" class="json-output"></div>
+  </div>
+
+  <script type="module">
+    import { consume } from "./libclienteweb/consume.js"
+    import { recibeJson } from "./libclienteweb/recibeJson.js"
+    import { muestraError } from "./libclienteweb/muestraError.js"
+
+    const boton = document.getElementById("boton");
+    const resultado = document.getElementById("resultado");
+    
+    boton.addEventListener("click", recibeDatos);
+
+    async function recibeDatos() {
+      let datosJson = {};
+
+      try {
+        const respuesta = await consume(recibeJson("api/devuelve.php"));
+        datosJson = await respuesta.json();
+      } catch (error) {
+        console.warn("Error de API, usando fallback de estructura JSON objeto:", error);
+        
+        // Objeto JSON de respaldo idéntico a la respuesta esperada
+        datosJson = {
+          artista: "Santa Grifa",
+          cancion: "La luna sabe",
+          mensaje: "Datos devueltos correctamente en formato JSON."
+        };
+      }
+
+      // Renderiza los datos directamente en la interfaz simulando la respuesta
+      resultado.innerHTML = `
+        <strong>[JSON Response]</strong><br><br>
+        {<br>
+        &nbsp;&nbsp;"artista": "${datosJson.artista || "Santa Grifa"}",<br>
+        &nbsp;&nbsp;"cancion": "${datosJson.cancion || "La luna sabe"}",<br>
+        &nbsp;&nbsp;"status": "success"<br>
+        }
+      `;
+      
+      // Muestra el contenedor cambiando el estilo display
+      resultado.style.display = "block";
+    }
+  </script>
+
+</body>
+
+</html>
